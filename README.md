@@ -1,4 +1,4 @@
-# Han's Data Analytics Portfolio 
+# Data Analytics Projects
 
 #Project 1: [Taiwan Bankruptcy Dataset - Explanatory and Predictive Analysis via Logistic Regression](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/Bankruptcy.ipynb) 
 
