@@ -2,6 +2,9 @@
 title: Reactions to Shock in Oil Price and GDP Changes on Clean Energy Equity Returns-
   Time Series Analysis
 output: github_document
+    fig_width: 5
+    fig_height: 5
+    dev: jpeg
 ---
 
 ## Introduction
