@@ -1,0 +1,228 @@
+---
+title: Reactions to Shock in Oil Price and GDP Changes on Clean Energy Equity Returns-
+  Time Series Analysis
+output: github_document
+---
+
+## Introduction
+
+This project shall explore time series trends within 3 sets of data: Brent Crude Oil Price, iShares Global Clean Energy ETF and US GDP Data.
+
+We shall build a vector auto-regressive model, which is a multivariate time series model that relates current observations of a time series data to past observations of itself and other time series. An impulse response function will also provide a view of how this model will react in relation to an isolated shock of a specific variable.
+
+This is not an academic project, more so casual data exploration.
+
+```{r}
+library(ggplot2)
+library(lmtest)
+library(tidyr)
+library(vars)
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(dplyr)
+library(tseries)
+ICLN <- read_excel("~/Downloads/ICLN.xlsm")
+View(ICLN)
+GDP_2008 <- read_excel("~/Documents/GDP_2008.xlsx")
+View(GDP_2008)
+Oil_Price_2008 <- read_excel("~/Documents/Oil_Price_2008.xlsx")
+```
+
+The iShares Global Clean Energy (ICLN) index, is an ETF that tracks the investment results of an index composed of global equities in the clean energy sector with exposure to companies that produce energy in solar, wind and other renewable sources. We shall interpret this as an index that tracks the stock returns of global energy equities. This is taken from iShares.
+
+The Brent Crude Oil is the benchmark and acts as a price index for the world's leading basin crude oils, taken from trading economics.
+
+US GDP data measures U.S output, GDP is defined as the market value of goods and services produced by labor located in the United States. This is taken from St Louis Federal Reserve Economic Data.
+
+## Data Transformation
+
+We see that US GDP data and Brent Crude Oil is on a quarterly basis, whilst ICLN is daily. We shall transform the latter into quarterly data for the sake of uniformity.
+
+```{r}
+Oil_Price_2008$Month <- as.Date.POSIXct(Oil_Price_2008$Month)
+Oil_Price_2008$Month <- as.yearqtr(Oil_Price_2008$Month)
+
+ICLN$Date <- as.Date.POSIXct(ICLN$Date)
+ICLN$QDate <- as.yearqtr(ICLN$Date)
+ICLN_Qtr <- aggregate(ICLN$Close, by = list(ICLN$QDate), FUN = first)
+
+GDP_2008$Month <- as.Date.POSIXct(GDP_2008$Month)
+GDP_2008$Month <- as.yearqtr(GDP_2008$Month)
+
+head(ICLN_Qtr)
+head(GDP_2008)
+head(Oil_Price_2008)
+
+```
+
+We have to normalize our data, as each of the time series values are on different scales The impulse response function will cause inflated/deflated reactions if we use absolute values. Therefore, by transforming time series into log-differences we will be analyzing the relative change in the time series data across time periods.
+
+```{r}
+Oil_Price_2008$`Brent Oil price` <- log(Oil_Price_2008$`Brent Oil price`)
+Oil_Price_Change  <- diff(Oil_Price_2008$`Brent Oil price`)
+
+ICLN_Qtr$x <- log(ICLN_Qtr$x)
+ICLN_Change <- diff(ICLN_Qtr$x)
+
+GDP_2008$GDP <- log(GDP_2008$GDP)
+GDP_2008_Change <- diff(GDP_2008$GDP)
+
+Time_Series_Y <- data_frame(Oil_Price_Change, ICLN_Change, GDP_2008_Change)
+par(cex.axis=0.5,cex.lab=0.5,cex=0.5)
+plot.ts(Time_Series_Y)
+```
+
+An important assumption of a VAR model, is that the variables in the model are stationary.
+
+Stationarity is defined as when a time series does not depend on the period in time at which the time series data point is observed. This essentially means that time series with trend or seasonality cannot be considered stationary due to the fact that their behavior can be attributed to a function of time.
+
+The Adult-Dickey Fuller test (ADF) is a good test to detect non-stationarity within time-series.
+
+The null hypothesis of the ADF Test is that the series is non-stationary.
+
+The alternative seeks to disprove the null hypothesis, and states that the series in stationary.
+
+Our p-values for the ADF test of log change in GDP states that we are able to conclude within a 99% confidence interval that these time series are stationary.
+
+```{r}
+adf.test(Oil_Price_Change)
+adf.test(GDP_2008_Change)
+adf.test(ICLN_Change)
+```
+
+## Time Series Decomposition
+
+We shall decompose the time-series for ICLN and Oil, and adjust it to take out seasonality in order to enforce stationarity.
+
+```{r}
+Oil_Price_ts <- ts(Oil_Price_Change, frequency = 4, c(2009,1))
+Oil_Dec <- decompose(Oil_Price_ts)
+Oil_Adj <- Oil_Price_ts - Oil_Dec$seasonal - Oil_Dec$trend
+Oil_Adj[is.na(Oil_Adj)] <- 0
+
+ICLN_Ts <- ts(ICLN_Change, frequency = 4, c(2009,1))
+ICLN_dec <- decompose(ICLN_Ts)
+ICLN_Adj <- ICLN_Change - ICLN_dec$seasonal - ICLN_dec$trend
+ICLN_Adj[is.na(ICLN_Adj)] <- 0
+
+Adj_Time_Series <- data_frame(Oil_Adj, ICLN_Adj, GDP_2008_Change)
+par(cex.axis=0.5,cex.lab=0.5,cex=0.5)
+plot.ts(Adj_Time_Series)
+adf.test(ICLN_Adj)
+adf.test(Oil_Adj)
+```
+
+## Model Preparation
+
+We now see that the ADF test for the seasonally and trend adjusted time series for ICLN has a p value of approximately 0.01 This means that we can say within a 95% confidence interval that this time series is stationary.
+
+Before we build the model, we must select the optimal lag length to be used. We shall set the maximum lag at 4 as we intend to only test for the relationship of variables lagged as far as 1 year (4 quarters).
+
+```{r}
+VAR_Y <- data.frame(Oil_Adj, GDP_2008_Change, ICLN_Adj)
+Lag_Order <- VARselect(VAR_Y, lag.max = 4)
+summary(Lag_Order$selection)
+```
+
+Based on the Aikake Information Criteria (AIC) the optimal lag length is 4, we shall use this lag-length for our VAR model
+
+We shall now combine these time-series into a data-frame and use them as the Y variables for our VAR model.
+
+```{r}
+AIC <- VAR(VAR_Y, lag.max = 4, season = NULL, exog = NULL, type="none")
+summary(AIC)
+```
+
+## Significant Coefficients
+
+The are plenty of insights we can extract from each equation, however, the relationship that we will choose to examine further is the one where log stock returns of ICLN is the Y variable. We see that the p-value is less than 0.05, indicating that this model provides a better fit than a null model with no variables and an intercept. The low r-squared however, indicates that there are potentially other variables that can be included into the model that may provide a better fit.
+
+The lagged variable of log GDP change in the model is statistically significant for 2-quarter lags. This allows us to conclude within the 90% confidence interval, that log changes in GDP during 2 quarters back are associated with current log changes changes in the ICLN ETF. We are unable to do so however, for the rest of the lag periods as they statistically insignificant.
+
+There is also statistical significance for several periods of lagged log changes in oil price as a coefficient, we see that there is significant negative correlation between the lagged log changes in oil price from past 2,3 and 4 quarters ago within the 90 and 95% confidence interval.
+
+We also see notable statistical significance between current values of the ETF, and its past values as the log changes in the index for previous first, second and fourth quarters are within the 99% confidence interval.
+
+We can therefore conclude that lagged log changes in the GDP,lagged log oil price change and lagged log stock returns all have a notable relationship with the ETF's current log returns.A lasting negative relationship between log oil price changes and current log stock returns can be seen with higher precision in comparison to lag GDP changes.
+
+We also must recognize that there are potentially other variables we could have added in addition to our existing endogenous variables into the model that will give better fit. This is a reduced form VAR model, which identifies current shocks to each time-series variables as an error term, thus we will choose not to explicitly model for the contemporaneous interdependence between the variables as we are only concerned with the relationship between each variable and lagged values wihin the scope of this project.
+
+## Model Diagnostics
+
+A VAR model includes these following assumptions :
+
+1.  The residuals show no autocorrelation
+2.  The variables are stationary
+3.  Residuals show no heteroscedasticity
+4.  Residuals are normally distributed.
+
+```{r}
+Serial1 <- serial.test(AIC, lags.pt = 4, type = "ES")
+Serial1
+
+Arch <- Arch1 <- arch.test(AIC, lags.multi = 4, multivariate.only = TRUE)
+Arch1
+
+Norm1 <- normality.test(AIC, multivariate.only = TRUE)
+Norm1 
+
+Stability1 <- stability(AIC, type = "OLS-CUSUM")
+plot(Stability1)
+```
+
+The Edgerton Shukur F-test, which is suitable for small to medium-sized samples, tests for serial correlation between residuals, with the null hypothesis being that the residuals show no serial correlation. Our p value is above the 0.05 threshold so we can uphold this null hypothesis.
+
+The ARCH test checks for heteroscedasticity within residuals, which indicates where there are clusters of large volatility in residuals during certain periods in time. The null hypothesis is that the residuals have no heteroscedasticity. Our p value is above the 0.05 threshold so we can uphold this null hypothesis.
+
+The normality test comes with 3 tests, the kurtosis tests for if the distribution has a heavy/light tail, the skewness tests for the symmetry of the distribution while the JB-test is able to test for both such attributes. We see that we are unable to disprove the null hypothesis for any, which states that the distribution does not have these attributes and thus we can conclude that our residuals are normally distributed.
+
+The stability test checks for the presence of structural breaks, which is the unexpected change over time in the parameters of models. We see that the cumulative sum of residuals across the time period are within the red bands for all variables, which indicate that there are no structural breaks.
+
+We see that our model is able to validate the assumptions listed above, and also have no structural breaks that may cause forecasting errors.
+
+## Impulse Response Function Interpretation
+
+The Impulse Response Function visually portrays the impact to the VAR model of a positive shock/change to an input of one of the variables. We can discern it as a representation of the how the coefficients of an equation for a Y variable in the VAR model relate to the movement of the said variable over time from a shock in one of its inputs.
+
+The positive shock is described to be a shock of 1 standard deviation from the mean of a given input on the system.
+
+We shall examine the response of the log stock returns of the ICLN index from a one standard deviation shock in the log GDP change, log Oil Price change and its own log stock returns in 3 separate scenarios.
+
+```{r}
+IRF <- irf(AIC, impulse = "GDP_2008_Change", response = "ICLN_Adj", n.ahead = 15, boot = T, cumulative = FALSE, ci =0.9)
+plot(IRF)
+IRF <- irf(AIC, impulse = "Oil_Adj", response = "ICLN_Adj", n.ahead = 15, cumulative = FALSE, ci =0.9)
+plot(IRF)
+IRF <- irf(AIC, impulse = "ICLN_Adj", response = "ICLN_Adj", n.ahead = 15,cumulative = FALSE, ci =0.9)
+plot(IRF)
+```
+
+Since this is a reduced-form VAR model and we have not explicitly identified contemporaneous relationships between variables as coefficients in our model, the starting point of the response variable in an IRF visual may be at a point higher/lower than 0. We are more interested in the relative movement beyond this starting point the lagged coefficients are what is specified in the model.
+
+The red bands describe the 90% confidence interval at which the behavior of the response variable is estimated, therefore this is a function of the standard errors of the coefficient estimates in the model.
+
+There is a higher level of uncertainty for the response of stock returns from a shock in GDP change in the quarter immediately after, relative to the second quarter where the log stock returns exhibit a strong downwards trend as a result of this shock. This decline is alleviated in the following third quarter with an upwards trend. We are able to infer this broad trend of cyclicality slowly diminishes over time until eventually converging close to 0. Reconciling the high level of uncertainty during the first quarter after the shock and from the 3rd quarter after the shock on wards with our findings, a macro level insight we can deduce is that positive GDP shocks will cause a negative pull on stock returns of clean energy equities 2 quarters later that is reversed for an overall aggregate positive impact in the short-term (1-year time frame) based on our VAR model. This short-term impact, however, subsides across the long-term.
+
+We are able to see a declining trend in stock returns in the 1st quarter, after a positive shock in the rate of change in Oil price with high precision. 4 quarters after this shock we see that there is an aggregate positive impact on stock returns. There is cyclicality present in this IRF as well but not to the degree of our earlier graph. Thus, positive shocks to the rate of Oil price changes cause a negative pull on stock returns of clean energy equities in the 1st quarter after but reversed for an overall aggregate positive impact in the short-term based on our VAR model.The stock returns however is associated with an apparent decline immediately after this 1-year time frame, and starts to subside in the long-term.
+
+A downtrend in the following first quarter is also seen with high level of confidence in a positive shock of clean energy stock returns, which is also immediately reversed in the second. We see that this positive shock will cause an aggregate negative impact on returns in the short-term, that is alleviated immediately following the 1-year time frame and eventually converging close to 0.
+
+In conclusion, we see that despite an immediate downwards pull in returns from all three positive shocks there is an overall positive impact on returns in the 1-year point. Possible reasons that could be attributed to these short-term effects is that the market prices in negative scenarios/outlooks in the first or second quarter after these shocks but adjusts to a more positive outlook on the performance of the clean energy sector as time passes into through a one-year period.
+
+## Causality Inference
+
+A granger causality test calculates a Wald Statistic, which is used to disprove the null hypothesis that no lags of a variable X are statistically significant (If 3 lags with coefficients B then B1 = B2 = B3 = 0) in forecasting for a variable Y. This helps us to discern if within a reasonable level of confidence we are able to conclude that lags of a certain variable contribute towards reducing forecasting error.
+
+The null hypothesis therefore, is that lagged variables of X are not significant in forecasting variable Y.
+
+The alternative hypothesis being that lagged variables of X are significant in forecasting variable Y.
+
+```{r}
+grangertest(ICLN_Adj~GDP_2008_Change, order = 4, VAR_Y)
+grangertest(ICLN_Adj~Oil_Adj, order = 4, VAR_Y)
+```
+
+From the granger tests, we are able to see that we are not able to conclude within a 90% or 95% confidence interval that lagged GDP changes provide significant reduction in forecasting errors when included in the model. On the other hand, we are able to see within the 90% confidence interval that lagged rates of change in Oil price are significant in forecasting for the stock returns of clean energy equities.
+
+This provides further depth to our analysis, as we must consider that there are other variables that can potentially be added into the model that will allow for reduced forecasting errors from our current model. We are able to uphold our insights of the relationship between Oil price rate shocks and the response of stock returns, however we are unable to do so for our relationship between GDP rate shocks and responses of stock returns with the same level of confidence.
