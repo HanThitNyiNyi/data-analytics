@@ -8,5 +8,5 @@ This was a project I did, using Logistic Regression to provide an explanatory vi
 * 2 different Logistic Regression models are used, for explanatory and predictive use. 
 
 
-#[Project 2](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/r-project%20(2).ipynb): Stock Returns of Renewable Energy ETF and Impact on Economic Uncertainty Index - Vector Autoregressive Model  
+#[Project 2](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/r-project%20(2).ipynb): Stock Returns of iShares Global Clean Energy ETF and its relationship with US GDP Growth and Brent Crude Oil Price Changes - Time Series Analysis through Vector Autoregression and Impulse Response Functon
 
