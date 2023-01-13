@@ -19,6 +19,7 @@ I explored correlations on R between time series trends of Clean Energy ETF retu
 
 #[Project 3](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/Cluster_Project.ipynb) : Tech Company Layoffs - Finding Common Characteristics in Layoff Data of US Tech Companies through Cluster Analysis
 
-I segmented industry, funding stage and layoff size characteristics of US tech companies with reported layoffs through K-means clustering in 2020 and 2022.
+I segmented location, industry, funding stage and layoff size characteristics of US tech companies with reported layoffs through K-means clustering in 2020 and 2022.
 
 * K-means clustering algorithm is used.
+* A 2020 and 2022 stratified view of tech layoffs
