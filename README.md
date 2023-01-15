@@ -21,5 +21,6 @@ I explored correlations on R between time series trends of Clean Energy ETF retu
 
 I segmented location, industry, funding stage and layoff size characteristics of US tech companies with reported layoffs through K-modes clustering in 2020 and 2022.
 
+* Dataset derived from Kaggle
 * K-means clustering algorithm is used to cluster mixed datasets that contain both categorical and numerical datatypes.
 * A 2020 and 2022 stratified view of tech layoffs
