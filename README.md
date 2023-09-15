@@ -26,7 +26,7 @@ I segmented location, industry, funding stage and layoff size characteristics of
 * A 2020 and 2022 stratified view of tech layoffs
 
 
-#[Project 4](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/Cluster_Project.ipynb) : Natural Language Processing of Tweets - Utilising a Recurrent Neural Network Algorithm for Text Classification to Label Tweets for Disaster Warnings. 
+#[Project 4](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/nlp-project2%20(7).ipynb) : Natural Language Processing of Tweets - Utilising a Recurrent Neural Network Algorithm for Text Classification to Label Tweets for Disaster Warnings. 
 
 I analyzed over 10,000 tweets to find common keywords associated with tweets regarding real life incidents accidents, natural disasters and other public emergencies and built a deep learning model for prediction of whether specific tweets are alluding to such incidents. 
 
