@@ -1,6 +1,6 @@
 # My Data Analytics Portfolio 
 
-[Project 1]([https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/Bankruptcy_(1)%20(3).ipynb]) : Taiwan Bankruptcy Dataset - Explanatory and Predictive Analysis via Logistic Regression 
+[Project 1](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/Bankruptcy_(1)%20(3).ipynb) : Taiwan Bankruptcy Dataset - Explanatory and Predictive Analysis via Logistic Regression 
 
 Used Logistic Regression to provide an explanatory view of financial metrics that were associated with the likelihood of bankruptcy in Taiwanese companies and also utilizing Logistic Regression for predictive capabilities. 
 
