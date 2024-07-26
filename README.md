@@ -27,10 +27,3 @@ I segmented location, industry, funding stage and layoff size characteristics of
 * K-means clustering algorithm is used to cluster mixed datasets that contain both categorical and numerical datatypes.
 * A 2020 and 2022 stratified view of tech layoffs
 
-
-[Project 4](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/Twitter_Disaster_Classification.ipynb) : Twitter Text Classification for Detecting Tweets Related to Real-World Disasters & Emergencies Using Bidirectional LSTM
-
-* Dataset derived fron Kaggle 
-* Constructed Bidirectional LSTM using TensorFloW Keras to account for long-term and short-term dependencies within text.
-* TimeDistributed Dense Layers will allow for higher-level abstractions during sequential processing of text elements 
-
