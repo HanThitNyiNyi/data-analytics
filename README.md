@@ -19,11 +19,11 @@ A vector autoregression model (VAR) is used to incorporate the effects of past c
 * IRF is used to visualize effects into the future of changes in one time series variable on another. 
 
 
-[Project 3](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/Cluster_Project.ipynb) : Tech Company Layoffs - Finding Common Characteristics in Layoff Data of US Tech Companies through Cluster Analysis
+[Project 3](https://github.com/HanThitNyiNyi/data-analytics/blob/Projects/Cluster_Project.ipynb) : Tech Company Layoffs - Finding Common Characteristics in Layoff Data of US Tech Companies with K-Prototypes clustering
 
-I segmented location, industry, funding stage and layoff size characteristics of US tech companies with reported layoffs through K-modes clustering in 2020 and 2022.
+I segmented location, industry, funding stage and layoff size characteristics of US tech companies with reported layoffs through K-prototypes clustering in 2020 and 2022.
 
 * Dataset derived from Kaggle
-* K-means clustering algorithm is used to cluster mixed datasets that contain both categorical and numerical datatypes.
+* K-Prototypes clustering algorithm is used to cluster mixed datasets that contain both categorical and numerical datatypes.
 * A 2020 and 2022 stratified view of tech layoffs
 
